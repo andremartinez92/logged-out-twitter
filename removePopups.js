@@ -1,53 +1,39 @@
-function waitForElement(selector) {
-    return new Promise(resolve => {
-        if (document.querySelector(selector)) {
-            return resolve(document.querySelector(selector));
-        }
+const treeConfig = { childList: true, subtree: true };
+// Config used to observe the top-most HTML tag
+const htmlConfig = { attributes: true, attributeFilter: ['style'] };
 
-        const observer = new MutationObserver(_mutations => {
-            if (document.querySelector(selector)) {
-                resolve(document.querySelector(selector));
-                observer.disconnect();
-            }
-        });
+const removeOverlay = () => {
+    const overlay = document.querySelector(['[role="group"]']);
+    if(overlay) {
+        overlay.parentNode.removeChild(overlay);
+    }
+};
 
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-    });
+const removeFooter = () => {
+    const footer = document.querySelector(['[id="layers"]']);
+    if(footer) {
+        footer.parentNode.removeChild(footer);
+    }
 }
 
-function waitForHtmlStyleChange(selector) {
-    return new Promise(resolve => {
-        if (selector(document.documentElement.style)) {
-            return resolve(document.documentElement);
-        }
-
-        const observer = new MutationObserver(_mutations => {
-            if (selector(document.documentElement.style)) {
-                resolve(document.documentElement);
-                observer.disconnect();
-            }
-        });
-
-        observer.observe(document.documentElement, {
-            attributes: true,
-        });
-    });
+const removeOverflowStyle = () => {
+    const overflowStyle = document.documentElement.style.overflow;
+    if(overflowStyle === 'hidden') {
+        document.documentElement.style.removeProperty('overflow');
+    }
 }
 
-// Remove overlay
-waitForElement('[role="group"]').then((element) => {
-    element.parentNode.removeChild(element);
-});
+const treeObserverCallback = (_mutations, _observer) => {
+    removeOverlay();
+    removeFooter();
+}
 
-// Remove footer
-waitForElement('[id="layers"]').then((element) => {
-    element.parentNode.removeChild(element);
-});
+const treeObserver = new MutationObserver(treeObserverCallback);
+treeObserver.observe(document.body, treeConfig);
 
-// Allow scroll
-waitForHtmlStyleChange((style) => style.overflow === 'hidden').then((element) => {
-    element.style.removeProperty('overflow');
-})
+const htmlObserverCallback = (_mutations, _observer) => {
+    removeOverflowStyle();
+}
+
+const htmlObserver = new MutationObserver(htmlObserverCallback);
+htmlObserver.observe(document.documentElement, htmlConfig);

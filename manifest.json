@@ -1,5 +1,5 @@
 {
-    "manifest_version": 1,
+    "manifest_version": 2,
     "name": "Logged Out Twitter",
     "version": "0.1.0", 
     "description": "Removes Twitter popups that force you to log in.",
